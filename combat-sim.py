@@ -172,7 +172,7 @@ if world_buffs == True:
 
 if raid_buffs == True:
     crit_chance = crit_chance + 0.8 # 16agi imp. motw
-    attack_power = attack_power + 562 # 16str imp. motw, 100 trueshot, 290 imp. battle shout, 140 strength of earth v
+    attack_power = attack_power + 562 # 16str imp. motw, 100 trueshot, 290 imp. battle shout, 140 strength of earth iv
 
 if consumables == True:
     crit_chance = crit_chance + 3.25 # mongoose
