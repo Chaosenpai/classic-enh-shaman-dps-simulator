@@ -1,5 +1,6 @@
 import random
 
+boss_dodge_chance = 0
 flurry_increase = 0.7
 flurry_charges = 0
 flurry_refreshes = 0
@@ -21,7 +22,7 @@ def weapon_skill():
             return 0.85
             break
         elif orc in ["n", "N"]:
-            return 0.6
+            return 0.65
             break
         else:
             print("Please type y or n...")
@@ -77,12 +78,12 @@ def logging():
 def attack():
     roll = (random.randint(1, 1000))
     if roll <= miss_chance * 10:
-    	return "miss"
-    elif roll <= (miss_chance + 6.5) * 10: # Level +3 targets have 6.5% chance to dodge
+        return "miss"
+    elif roll <= (miss_chance + boss_dodge_chance) * 10:
         return "dodge"
-    elif roll <= (miss_chance + 6.5 + 40) * 10:
+    elif roll <= (miss_chance + boss_dodge_chance + 40) * 10:
         return "glance"
-    elif roll <= (miss_chance + 6.5 + 40 + crit_chance) * 10:
+    elif roll <= (miss_chance + boss_dodge_chance + 40 + crit_chance) * 10:
         return "crit"
     else:
         return "hit"
@@ -136,7 +137,7 @@ if crit_chance == "":
 else:
     crit_chance = round(float(crit_chance.replace("%", "").strip()), 2)
 
-crit_chance = crit_chance - 3 # because level + 3 target crit suppression costs us 3% crit
+crit_chance = crit_chance - 4.8 # because level + 3 target has 3% crit suppression and 1.8% aura crit suppression
 
 weapon_speed = round(float(input("Input your weapon speed (hit enter for Nightfall - 3.5): ") or 3.5), 1)
 
@@ -154,6 +155,12 @@ else:
     miss_chance = int(miss_chance.replace("%", "").strip())
 
 glance_penalty = weapon_skill()
+
+# Level +3 targets have 6.5% chance to dodge at 300 weapon skill, 6% at 305
+if glance_penalty == 0.85:
+    boss_dodge_chance = 6
+else:
+    boss_dodge_chance = 6.5
 
 world_buffs = add_world_buffs()
 
