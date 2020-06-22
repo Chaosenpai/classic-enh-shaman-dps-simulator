@@ -1,19 +1,22 @@
 import random
 
+agility = 0
 boss_dodge_chance = 0
-flurry_increase = 0.7
+damage = 0
+fight_duration = 0
 flurry_charges = 0
+flurry_increase = 1.3
+flurry_procs = 0
 flurry_refreshes = 0
+strength = 0
 total_attacks = 0
 total_crits = 0
-total_hits = 0
 total_dodged = 0
-total_missed = 0
 total_glancing = 0
-hasted_attacks = 0
-unhasted_attacks = 0
+total_hits = 0
+total_missed = 0
+unflurried_time = 0
 windfury_procs = 0
-damage = 0
 
 def weapon_skill():
     while True:
@@ -29,7 +32,7 @@ def weapon_skill():
 
 def add_world_buffs():
     while True:
-        buffs = input("World buffs (Dragonslayer, Songflower,  DMF,  DM,  Warchief)? y/n (hit enter for n): ") or "n"
+        buffs = input("World buffs (Dragonslayer, Songflower,  DMF,  DM,  Warchief, Hakkar)? y/n (hit enter for y): ") or "y"
         if buffs in ["y", "Y"]:
             return True
             break
@@ -41,7 +44,7 @@ def add_world_buffs():
 
 def add_raid_buffs():
     while True:
-        buffs = input("Raid buffs (imp. Battle Shout, imp. MotW, Trueshot, Strength of Earth IV)? y/n (hit enter for n): ") or "n"
+        buffs = input("Raid buffs (imp. Battle Shout, imp. MotW, Trueshot, Strength of Earth IV)? y/n (hit enter for y): ") or "y"
         if buffs in ["y", "Y"]:
             return True
             break
@@ -53,7 +56,7 @@ def add_raid_buffs():
 
 def add_consumables():
     while True:
-        buffs = input("Consumables (Mongoose, Giants, R.O.I.D.S, +10 str food)? y/n (hit enter for n): ") or "n"
+        buffs = input("Consumables (Mongoose, Giants, R.O.I.D.S, +20 str food)? y/n (hit enter for y): ") or "y"
         if buffs in ["y", "Y"]:
             return True
             break
@@ -78,15 +81,15 @@ def logging():
 def attack():
     roll = (random.randint(1, 1000))
     if roll <= miss_chance * 10:
-        return "miss"
+        return "Miss"
     elif roll <= (miss_chance + boss_dodge_chance) * 10:
-        return "dodge"
+        return "Dodge"
     elif roll <= (miss_chance + boss_dodge_chance + 40) * 10:
-        return "glance"
+        return "Glancing Blow"
     elif roll <= (miss_chance + boss_dodge_chance + 40 + crit_chance) * 10:
-        return "crit"
+        return "Crit"
     else:
-        return "hit"
+        return "Hit"
 
 def crit_damage(wf):
     if wf == True:
@@ -119,25 +122,22 @@ print("- You are specced into 5/5 Flurry")
 print("- You are specced into 3/3 Elemental Weapons")
 print("- You are specced into 5/5 Weapon Mastery\n")
 
-fight_duration = input("Input the fight length in seconds (hit enter for 200000 - usually gives you 100k+ attacks): ")
+requested_fight_duration = input("Input the fight length in seconds (hit enter for 200000 - usually gives you 100k+ attacks): ")
 
-if fight_duration == "":
-    fight_duration = 200000
+if requested_fight_duration == "":
+    requested_fight_duration = 200000
 else:
-    fight_duration = int(fight_duration.replace(",", "").strip())
+    requested_fight_duration = int(requested_fight_duration.replace(",", "").strip())
 
-reported_fight_duration = fight_duration
+attack_power = int(input("Input your Shaman's unbuffed attack power (hit enter for 750): ") or 750)
 
-attack_power = int(input("Input your Shaman's attack power (hit enter for 750): ") or 750)
+crit_chance = input("Input your Shaman's unbuffed crit chance (hit enter for 25): ")
 
-crit_chance = input("Input your Shaman's crit chance (hit enter for 25): ")
-
+# because level + 3 target has 3% crit suppression and 1.8% aura crit suppression
 if crit_chance == "":
-    crit_chance = 25
+    crit_chance = 25 - 4.8
 else:
-    crit_chance = round(float(crit_chance.replace("%", "").strip()), 2)
-
-crit_chance = crit_chance - 4.8 # because level + 3 target has 3% crit suppression and 1.8% aura crit suppression
+    crit_chance = round(float(crit_chance.replace("%", "").strip()), 2) - 4.8
 
 weapon_speed = round(float(input("Input your weapon speed (hit enter for Nightfall - 3.5): ") or 3.5), 1)
 
@@ -171,165 +171,165 @@ consumables = add_consumables()
 logs = logging()
 
 if world_buffs == True:
-    crit_chance = crit_chance + 10.75 # 5% ony, 5% + 15agi songflower
+    strength = int(input("Input your Shaman's unbuffed Strength score (hit enter for 150): ") or 150)
+    agility = int(input("Input your Shaman's unbuffed Agility score(hit enter for 150): ") or 150)
+    strength = (round((strength + 15) * 1.15)) - strength # songflower str + bonus str from Hakkar buff
+    agility = (round((agility + 15) * 1.15)) - agility # songflower agi + bonus agi from Hakkar buff
+    crit_chance = crit_chance + 10 + round(agility / 20, 2) # 5% ony, 5% songflower, agi
     wpn_dmg_lo = round(wpn_dmg_lo * 1.1) # DMF sayge buff
     wpn_dmg_hi = round(wpn_dmg_hi * 1.1) # DMF sayge buff
-    attack_power = attack_power + 370 # 140 ony, 200 fengus, 15str songflower
-    weapon_speed = round(weapon_speed * 0.85, 2) # 15% haste warchief
+    attack_power = attack_power + 340 + (strength * 2) # 140 ony, 200 fengus, str
+    weapon_speed = round(weapon_speed / 1.15, 2) # 15% haste warchief
 
 if raid_buffs == True:
-    crit_chance = crit_chance + 0.8 # 16agi imp. motw
-    attack_power = attack_power + 562 # 16str imp. motw, 100 trueshot, 290 imp. battle shout, 140 strength of earth iv
+    if world_buffs == True:
+        crit_chance = crit_chance + 0.92 # 16agi imp. motw with Hakkar buff
+        attack_power = attack_power + 197 # 16str imp. motw + 70str strength of earth iv with Hakkar buff
+        attack_power = attack_power + 390 # 100 trueshot, 290 imp. battle shout
+    else:
+        crit_chance = crit_chance + 0.8 # 16agi imp. motw
+        attack_power = attack_power + 562 # 16str imp. motw, 100 trueshot, 290 imp. battle shout, 70str strength of earth iv
 
 if consumables == True:
-    crit_chance = crit_chance + 3.25 # mongoose
-    attack_power = attack_power + 120 # giants, roids, 10str food
+    if world_buffs == True:
+        crit_chance = crit_chance + 3.4 # mongoose with Hakkar buff
+        attack_power = attack_power + 161 # giants, roids, 20str food with Hakkar buff
+    else:
+        crit_chance = crit_chance + 3.25 # mongoose
+        attack_power = attack_power + 140 # giants, roids, 20str food
 
 print("\n**ENTERING COMBAT...**\n")
 
-while fight_duration >= 0:
-    # Bonus hits from WF don't consume Flurry so we do them separately
-    windfury_check = random.randint(1, 5)
-    if windfury_check == 1:
-        if logs == True:
-            print("--------------------")
-            print("Windfury proc!")
-        windfury_procs += 1
-        total_attacks += 2
+while fight_duration < requested_fight_duration:
 
-        for i in range(0, 2):
-            result = attack()
-
-            if result == "miss":
-                total_missed += 1
-                if logs == True:
-                    print("Miss...")
-
-            elif result == "dodge":
-                total_dodged += 1
-                if logs == True:
-                    print("Dodge...")
-
-            elif result == "glance":
-                hit_dmg = glance_damage(True)
-                damage = damage + hit_dmg
-                total_glancing += 1
-                if logs == True:
-                    print("Windfury hit (glancing blow): " + str(hit_dmg) + " dmg")
-
-            elif result == "crit":
-                hit_dmg = crit_damage(True)
-                damage = damage + hit_dmg
-                total_crits += 1
-                if flurry_charges > 0:
-                    flurry_refreshes += 1
-                    if logs == True:
-                        print("Windfury crit! " + str(hit_dmg) + " dmg, refresh Flurry")
-                elif flurry_charges == 0 and logs == True:
-                    print("Windfury crit! " + str(hit_dmg) + " dmg, gain Flurry")
-                flurry_charges = 3
-
-            elif result == "hit":
-                hit_dmg = hit_damage(True)
-                damage = damage + hit_dmg
-                total_hits += 1
-                if logs == True:
-                    print("Windfury hit: " + str(hit_dmg) + " dmg")
-        if logs == True:
-            print("--------------------")
-
-    # Now the actual attack
     result = attack()
     total_attacks += 1
 
-    if result == "miss":
-        total_missed += 1
+    if total_attacks == 1: # 1st attack occurs at time 0, so it doesn't consume fight time
+        fight_duration = 0
+    elif flurry_charges > 0:
+        fight_duration = round(fight_duration + (weapon_speed / flurry_increase), 2)
+    elif flurry_charges == 0:
+        fight_duration = round(fight_duration + weapon_speed, 2)
+
+    if result in ("Miss", "Dodge"):
         if flurry_charges > 0:
-            hasted_attacks += 1
-            fight_duration = fight_duration - (round(weapon_speed * flurry_increase, 2))
             flurry_charges -= 1
             if logs == True:
                 if flurry_charges == 0:
-                    print("Miss - Flurry fades")
+                    print(str(fight_duration) + " sec: " + result + " - Flurry fades")
                 else:
-                    print("Miss - Flurry charges remaining: " + str(flurry_charges))
+                    print(str(fight_duration) + " sec: " + result + " - Flurry charges remaining: " + str(flurry_charges))
         elif flurry_charges == 0:
-            unhasted_attacks += 1
-            fight_duration = fight_duration - weapon_speed
+            if fight_duration > 0:
+                unflurried_time = unflurried_time + weapon_speed
             if logs == True:
-                print("Miss...")  
+                print(str(fight_duration) + " sec: " + result + "...")
 
-    elif result == "dodge":
-        total_dodged += 1
-        if flurry_charges > 0:
-            hasted_attacks += 1
-            fight_duration = fight_duration - (round(weapon_speed * flurry_increase, 2))
-            flurry_charges -= 1
-            if logs == True:
-                if flurry_charges == 0:
-                    print("Dodge - Flurry fades")
-                else:
-                    print("Dodge - Flurry charges remaining: " + str(flurry_charges))
-        elif flurry_charges == 0:
-            unhasted_attacks += 1
-            fight_duration = fight_duration - weapon_speed
-            if logs == True:
-                print("Dodge...")        
+        if result == "Miss":
+            total_missed += 1
+        elif result == "Dodge":
+            total_dodged += 1
 
-    elif result == "glance":
-        hit_dmg = glance_damage(False)
-        damage = damage + hit_dmg
-        total_glancing += 1
-        if flurry_charges > 0:
-            hasted_attacks += 1
-            fight_duration = fight_duration - (round(weapon_speed * flurry_increase, 2))
-            flurry_charges -= 1
-            if logs == True:
-                if flurry_charges == 0:
-                    print("Hit (glancing blow): " + str(hit_dmg) + " dmg - Flurry fades")
-                else:
-                    print("Hit (glancing blow): " + str(hit_dmg) + " dmg - Flurry charges remaining: " + str(flurry_charges))
-        elif flurry_charges == 0:
-            unhasted_attacks += 1
-            fight_duration = fight_duration - weapon_speed
-            if logs == True:
-                print("Hit (glancing blow): " + str(hit_dmg) + " dmg")
+    if result in ("Glancing Blow", "Crit", "Hit"):
 
-    elif result == "crit":
-        hit_dmg = crit_damage(False)
-        damage = damage + hit_dmg
-        total_crits += 1
-        if flurry_charges > 0:
-            hasted_attacks += 1
-            fight_duration = fight_duration - (round(weapon_speed * flurry_increase, 2))
-            flurry_refreshes += 1
+        # Bonus hits from WF don't consume Flurry or fight time so we do them separately
+        windfury_check = random.randint(1, 5)
+        if windfury_check == 1:
             if logs == True:
-                print("Crit! " + str(hit_dmg) + " dmg, refresh Flurry")
-        elif flurry_charges == 0:
-            unhasted_attacks += 1
-            fight_duration = fight_duration - weapon_speed
-            if logs == True:
-                print("Crit! " + str(hit_dmg) + " dmg, gain Flurry")
-        flurry_charges = 3
+                print("--------------------")
+                print("Windfury proc!")
+            windfury_procs += 1
+            total_attacks += 2
 
-    elif result == "hit":
-        hit_dmg = hit_damage(False)
-        damage = damage + hit_dmg
-        total_hits += 1
-        if flurry_charges > 0:
-            hasted_attacks += 1
-            fight_duration = fight_duration - (round(weapon_speed * flurry_increase, 2))
-            flurry_charges -= 1
+            for i in range(0, 2):
+                result = attack()
+
+                if result == "Miss":
+                    total_missed += 1
+                    if logs == True:
+                        print(str(fight_duration) + " sec: Windfury " + result + "...")
+
+                elif result == "Dodge":
+                    total_dodged += 1
+                    if logs == True:
+                        print(str(fight_duration) + " sec: Windfury " + result + "...")
+
+                elif result == "Glancing Blow":
+                    total_glancing += 1
+                    hit_dmg = glance_damage(True)
+                    damage = damage + hit_dmg
+                    if logs == True:
+                        print(str(fight_duration) + " sec: Windfury " + result + " (" + str(hit_dmg) + ")")
+
+                elif result == "Crit":
+                    total_crits += 1
+                    hit_dmg = crit_damage(True)
+                    damage = damage + hit_dmg
+                    if flurry_charges > 0:
+                        flurry_refreshes += 1
+                        if logs == True:
+                            print(str(fight_duration) + " sec: Windfury " + result + " (" + str(hit_dmg) + ") - refresh Flurry")
+                    elif flurry_charges == 0:
+                        flurry_procs += 1
+                        if logs == True:
+                            print(str(fight_duration) + " sec: Windfury " + result + " (" + str(hit_dmg) + ") - gain Flurry")
+                    flurry_charges = 3
+
+                elif result == "Hit":
+                    total_hits += 1
+                    hit_dmg = hit_damage(True)
+                    damage = damage + hit_dmg
+                    if logs == True:
+                        print(str(fight_duration) + " sec: Windfury " + result + " (" + str(hit_dmg) + ")")
+
+        if result in ("Glancing Blow", "Hit"):
+            if result == "Glancing Blow":
+                total_glancing += 1
+                hit_dmg = glance_damage(False)
+            elif result == "Hit":
+                total_hits += 1
+                hit_dmg = hit_damage(False)
+            damage = damage + hit_dmg
+            if flurry_charges > 0:
+                flurry_charges -= 1
+                if logs == True:
+                    if flurry_charges == 0:
+                        print(str(fight_duration) + " sec: " + result + " (" + str(hit_dmg) + ") - Flurry fades")
+                    else:
+                        print(str(fight_duration) + " sec: " + result + " (" + str(hit_dmg) + ") - Flurry charges remaining: " + str(flurry_charges))
+            elif flurry_charges == 0:
+                if fight_duration > 0:
+                    unflurried_time = unflurried_time + weapon_speed
+                if logs == True:
+                    print(str(fight_duration) + " sec: " + result + " (" + str(hit_dmg) + ")")
+
+        elif result == "Crit":
+            total_crits += 1
+            hit_dmg = crit_damage(False)
+            damage = damage + hit_dmg
+            if flurry_charges > 0:
+                flurry_refreshes += 1
+                if logs == True:
+                    print(str(fight_duration) + " sec: " + result + " (" + str(hit_dmg) + ") - refresh Flurry")
+            elif flurry_charges == 0:
+                flurry_procs += 1
+                if fight_duration > 0:
+                    unflurried_time = unflurried_time + weapon_speed
+                if logs == True:
+                    print(str(fight_duration) + " sec: " + result + " (" + str(hit_dmg) + ") - gain Flurry")
+            flurry_charges = 3
+
+        if windfury_check == 1:
             if logs == True:
-                if flurry_charges == 0:
-                    print("Hit: " + str(hit_dmg) + " dmg - Flurry fades")
-                else:
-                    print("Hit: " + str(hit_dmg) + " dmg - Flurry charges remaining: " + str(flurry_charges))
-        elif flurry_charges == 0:
-            unhasted_attacks += 1
-            fight_duration = fight_duration - weapon_speed
-            if logs == True:
-                print("Hit: " + str(hit_dmg) + " dmg")
+                print("--------------------")
+
+    if flurry_charges > 0 and (round(fight_duration + (weapon_speed / flurry_increase), 2) > requested_fight_duration):
+        fight_duration = requested_fight_duration
+
+    if flurry_charges == 0 and (round(fight_duration + weapon_speed, 2) > requested_fight_duration):
+        unflurried_time = unflurried_time + (requested_fight_duration - fight_duration)
+        fight_duration = requested_fight_duration
 
 # Output
 print("\n\n")
@@ -339,10 +339,6 @@ print("**********************************************")
 print("Attack power: " + str(round(attack_power)))
 print("Crit chance: " + str(round(crit_chance, 2)) + "% (including boss crit suppression)")
 print("Weapon speed: " + str(round(weapon_speed, 2)))
-print("Weapon damage (including 5/5 Weapon Mastery):")
-print("- Bottom end: " + str(round(wpn_dmg_lo)))
-print("- Top end: " + str(round(wpn_dmg_hi)))
-print("- Average: " + str(round(wpn_dmg_avg)))
 print("Miss chance: " + str(miss_chance))
 if glance_penalty == 0.85:
     print("You have 305 weapon skill, so your Glancing Blows inflicted " + str(round((1 - glance_penalty) * 100)) + "% less damage.")
@@ -359,11 +355,15 @@ print("- Total dodged: " + str(total_dodged) + " (" + str(round(total_dodged / t
 print("- Total glancing blows: " + str(total_glancing) + " (" + str(round(total_glancing / total_attacks * 100, 2)) + "%)")
 print("- Total crits: " + str(total_crits) + " (" + str(round(total_crits / total_attacks * 100, 2)) + "%)")
 print("- Total hits: " + str(total_hits) + " (" + str(round(total_hits / total_attacks * 100, 2)) + "%)\n")
+
 print("Total Windfury procs: " + str(windfury_procs))
-print("Total Flurry hasted attacks (incl glancing, missed, dodged): " + str(hasted_attacks))
-print("Total unhasted attacks (incl glancing, missed, dodged): " + str(unhasted_attacks))
+print("Total Flurry procs: " + str(flurry_procs))
 print("Total Flurry refreshes: " + str(flurry_refreshes) + "\n")
+
+print("Total fight time: " + str(round(fight_duration, 2)) + " seconds")
+print("Time with Flurry: " + str(round(fight_duration - unflurried_time, 2)) + " seconds")
+print("Time without Flurry: " + str(round(unflurried_time, 2)) + " seconds")
+print("Flurry uptime: " + str(round(((fight_duration - unflurried_time) / fight_duration) * 100, 2)) + " percent\n")
 print("Total damage: " + str(round(damage, 2)))
-print("Total DPS: " + str(round(damage / reported_fight_duration, 2)))
-print("Flurry uptime: " + str(round((1 - ((unhasted_attacks * weapon_speed) / reported_fight_duration)) * 100, 2)) + " percent\n")
+print("Total DPS: " + str(round(damage / fight_duration, 2)))
 input("\nZug zug! Hit the enter key to exit.")
