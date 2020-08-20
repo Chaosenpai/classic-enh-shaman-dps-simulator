@@ -25,7 +25,7 @@ def weapon_skill():
             return 0.85
             break
         elif orc in ["n", "N"]:
-            return 0.7
+            return 0.65
             break
         else:
             print("Please type y or n...")
